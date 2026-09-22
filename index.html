@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kylian AI Web Builder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #14171c;
+    --surface: #1b1f26;
+    --surface-2: #21262e;
+    --border: #2b313b;
+    --text: #e8e9ec;
+    --text-muted: #8a909c;
+    --amber: #e2b33c;
+    --amber-dim: #6b5a29;
+    --teal: #4fa3a0;
+    --danger: #d16a5f;
+    --radius: 6px;
+  }
+  *{ box-sizing: border-box; }
+  html,body{ height:100%; margin:0; }
+  body{
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    display:flex;
+    flex-direction:column;
+    height:100vh;
+    overflow:hidden;
+  }
+
+  /* ---- Top bar ---- */
+  header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 12px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink:0;
+  }
+  .brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .brand-mark{
+    width:22px; height:22px;
+    background: var(--amber);
+    border-radius: 4px;
+    position:relative;
+    flex-shrink:0;
+  }
+  .brand-mark::after{
+    content:'';
+    position:absolute;
+    inset: 6px;
+    background: var(--bg);
+    border-radius: 2px;
+  }
+  .brand-name{
+    font-family:'Space Grotesk', sans-serif;
+    font-weight:600;
+    font-size:15px;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .project-controls{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  select, .btn{
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    background: var(--surface-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 7px 12px;
+    cursor:pointer;
+  }
+  select:hover, .btn:hover{ border-color: #3a414d; }
+  .btn-primary{
+    background: var(--amber);
+    color: #201a08;
+    border-color: var(--amber);
+    font-weight:600;
+  }
+  .btn-primary:hover{ background:#ecc158; }
+  .btn-ghost{
+    background: transparent;
+  }
+
+  /* ---- Main layout ---- */
+  main{
+    flex:1;
+    display:flex;
+    min-height:0;
+  }
+
+  /* ---- Chat pane ---- */
+  .chat-pane{
+    width: 380px;
+    min-width: 300px;
+    display:flex;
+    flex-direction:column;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .messages{
+    flex:1;
+    overflow-y:auto;
+    padding: 16px;
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+  }
+  .msg{
+    font-size: 13.5px;
+    line-height:1.5;
+    padding: 10px 12px;
+    border-radius: var(--radius);
+    max-width: 100%;
+    white-space: pre-wrap;
+  }
+  .msg.user{
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    align-self:flex-end;
+  }
+  .msg.ai{
+    color: var(--text-muted);
+    border-left: 2px solid var(--teal);
+    padding-left:10px;
+  }
+  .msg.system{
+    color: var(--text-muted);
+    font-size:12.5px;
+    font-style: italic;
+  }
+  .msg.error{
+    color: var(--danger);
+    border-left: 2px solid var(--danger);
+    padding-left:10px;
+  }
+  .empty-state{
+    color: var(--text-muted);
+    font-size: 13.5px;
+    line-height:1.6;
+    padding: 4px 4px 0;
+  }
+  .empty-state b{ color: var(--text); }
+
+  .composer{
+    border-top: 1px solid var(--border);
+    padding: 12px;
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+    flex-shrink:0;
+  }
+  textarea{
+    resize:none;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    color: var(--text);
+    font-family:'Inter', sans-serif;
+    font-size: 13.5px;
+    padding: 10px 12px;
+    min-height: 64px;
+    outline:none;
+  }
+  textarea:focus{ border-color: var(--amber-dim); }
+  .composer-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+  }
+  .hint{
+    font-size: 11.5px;
+    color: var(--text-muted);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ---- Preview pane ---- */
+  .preview-pane{
+    flex:1;
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    background:#0e1013;
+  }
+  .preview-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink:0;
+  }
+  .preview-toolbar .label{
+    font-family:'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+  iframe{
+    flex:1;
+    width:100%;
+    border:none;
+    background: #fff;
+  }
+  .preview-empty{
+    flex:1;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color: var(--text-muted);
+    font-size: 14px;
+    text-align:center;
+    padding: 40px;
+  }
+  .preview-empty .big{
+    font-family:'Space Grotesk', sans-serif;
+    font-size: 20px;
+    color: var(--text);
+    margin-bottom: 8px;
+    display:block;
+  }
+
+  .spinner{
+    width:14px; height:14px;
+    border-radius:50%;
+    border: 2px solid var(--amber-dim);
+    border-top-color: var(--amber);
+    animation: spin 0.7s linear infinite;
+    display:inline-block;
+    vertical-align: middle;
+    margin-right:6px;
+  }
+  @keyframes spin{ to{ transform: rotate(360deg); } }
+
+  /* Mobile: stack panes */
+  @media (max-width: 760px){
+    main{ flex-direction:column; }
+    .chat-pane{
+      width:100%;
+      height: 46%;
+      border-right:none;
+      border-bottom: 1px solid var(--border);
+    }
+    .preview-pane{ height:54%; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <div class="brand-name">Kylian AI Web Builder</div>
+  </div>
+  <div class="project-controls">
+    <select id="projectSelect"></select>
+    <button class="btn" id="newProjectBtn">New</button>
+    <button class="btn" id="deleteProjectBtn">Delete</button>
+    <button class="btn btn-primary" id="downloadBtn">Download HTML</button>
+  </div>
+</header>
+
+<main>
+  <div class="chat-pane">
+    <div class="messages" id="messages">
+      <div class="empty-state" id="emptyState">
+        Describe the site you want and it'll appear on the right.<br><br>
+        Try: <b>"A one-page portfolio for a wedding photographer, warm and minimal"</b><br><br>
+        Once something's built, keep talking to refine it — <b>"make the header sticky"</b>, <b>"add a pricing section"</b>, etc.
+      </div>
+    </div>
+    <div class="composer">
+      <textarea id="promptInput" placeholder="Describe the site you want, or a change to make..."></textarea>
+      <div class="composer-row">
+        <span class="hint" id="statusHint"></span>
+        <button class="btn btn-primary" id="sendBtn">Build →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="preview-pane">
+    <div class="preview-toolbar">
+      <span class="label" id="previewLabel">no site yet</span>
+      <button class="btn btn-ghost" id="openTabBtn" style="display:none;">Open in new tab</button>
+    </div>
+    <div class="preview-empty" id="previewEmpty">
+      <div>
+        <span class="big">Nothing built yet</span>
+        Send a prompt on the left to generate your first page.
+      </div>
+    </div>
+    <iframe id="previewFrame" style="display:none;"></iframe>
+  </div>
+</main>
+
+<script>
+const STORAGE_KEY = 'workshop_projects_v1';
+
+let state = {
+  projects: {},      // id -> { name, html, history: [{role, content}] }
+  currentId: null,
+};
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if(raw){
+      const parsed = JSON.parse(raw);
+      state.projects = parsed.projects || {};
+      state.currentId = parsed.currentId || null;
+    }
+  }catch(e){ console.warn('Could not load saved projects', e); }
+
+  if(!state.currentId || !state.projects[state.currentId]){
+    const ids = Object.keys(state.projects);
+    if(ids.length){
+      state.currentId = ids[0];
+    } else {
+      createProject('My first site');
+    }
+  }
+}
+
+function saveState(){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }catch(e){ console.warn('Could not save projects', e); }
+}
+
+function createProject(name){
+  const id = 'p_' + Date.now();
+  state.projects[id] = { name: name || 'Untitled site', html: '', history: [] };
+  state.currentId = id;
+  saveState();
+  return id;
+}
+
+function currentProject(){
+  return state.projects[state.currentId];
+}
+
+// ---- UI wiring ----
+const projectSelect = document.getElementById('projectSelect');
+const messagesEl = document.getElementById('messages');
+const emptyState = document.getElementById('emptyState');
+const promptInput = document.getElementById('promptInput');
+const sendBtn = document.getElementById('sendBtn');
+const statusHint = document.getElementById('statusHint');
+const previewFrame = document.getElementById('previewFrame');
+const previewEmpty = document.getElementById('previewEmpty');
+const previewLabel = document.getElementById('previewLabel');
+const openTabBtn = document.getElementById('openTabBtn');
+
+function renderProjectSelect(){
+  projectSelect.innerHTML = '';
+  Object.entries(state.projects).forEach(([id, p]) => {
+    const opt = document.createElement('option');
+    opt.value = id;
+    opt.textContent = p.name;
+    if(id === state.currentId) opt.selected = true;
+    projectSelect.appendChild(opt);
+  });
+}
+
+function renderMessages(){
+  const p = currentProject();
+  messagesEl.innerHTML = '';
+  if(!p.history.length){
+    messagesEl.appendChild(emptyState);
+    return;
+  }
+  p.history.forEach(turn => {
+    const div = document.createElement('div');
+    if(turn.role === 'user'){
+      div.className = 'msg user';
+      div.textContent = turn.content;
+    } else if(turn.role === 'assistant'){
+      div.className = 'msg ai';
+      div.textContent = turn.content;
+    } else if(turn.role === 'error'){
+      div.className = 'msg error';
+      div.textContent = turn.content;
+    } else {
+      div.className = 'msg system';
+      div.textContent = turn.content;
+    }
+    messagesEl.appendChild(div);
+  });
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function renderPreview(){
+  const p = currentProject();
+  previewLabel.textContent = p.name;
+  if(p.html){
+    previewFrame.style.display = 'block';
+    previewEmpty.style.display = 'none';
+    openTabBtn.style.display = 'inline-block';
+    previewFrame.srcdoc = p.html;
+  } else {
+    previewFrame.style.display = 'none';
+    previewEmpty.style.display = 'flex';
+    openTabBtn.style.display = 'none';
+  }
+}
+
+function renderAll(){
+  renderProjectSelect();
+  renderMessages();
+  renderPreview();
+}
+
+async function handleSend(){
+  const prompt = promptInput.value.trim();
+  if(!prompt) return;
+
+  const p = currentProject();
+  p.history.push({ role: 'user', content: prompt });
+  promptInput.value = '';
+  renderMessages();
+  saveState();
+
+  sendBtn.disabled = true;
+  statusHint.innerHTML = '<span class="spinner"></span> generating…';
+
+  try{
+    const res = await fetch('/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt,
+        currentHtml: p.html || null,
+        history: p.history
+          .filter(t => t.role === 'user' || t.role === 'assistant')
+          .slice(0, -1), // exclude the message we just added, it's sent separately
+      }),
+    });
+
+    const data = await res.json();
+
+    if(!res.ok){
+      throw new Error(data.error || 'Something went wrong.');
+    }
+
+    p.html = data.html;
+    p.history.push({ role: 'assistant', content: 'Updated the site. Check the preview →' });
+    saveState();
+    renderMessages();
+    renderPreview();
+  }catch(err){
+    p.history.push({ role: 'error', content: err.message });
+    renderMessages();
+    saveState();
+  }finally{
+    sendBtn.disabled = false;
+    statusHint.textContent = '';
+  }
+}
+
+sendBtn.addEventListener('click', handleSend);
+promptInput.addEventListener('keydown', (e) => {
+  if(e.key === 'Enter' && (e.metaKey || e.ctrlKey)){
+    handleSend();
+  }
+});
+
+projectSelect.addEventListener('change', () => {
+  state.currentId = projectSelect.value;
+  saveState();
+  renderAll();
+});
+
+document.getElementById('newProjectBtn').addEventListener('click', () => {
+  const name = prompt('Name your new site:', 'Untitled site');
+  if(name === null) return;
+  createProject(name);
+  renderAll();
+});
+
+document.getElementById('deleteProjectBtn').addEventListener('click', () => {
+  const ids = Object.keys(state.projects);
+  if(ids.length <= 1){
+    alert("You need at least one project — create another before deleting this one.");
+    return;
+  }
+  if(!confirm(`Delete "${currentProject().name}"? This can't be undone.`)) return;
+  delete state.projects[state.currentId];
+  state.currentId = Object.keys(state.projects)[0];
+  saveState();
+  renderAll();
+});
+
+document.getElementById('downloadBtn').addEventListener('click', () => {
+  const p = currentProject();
+  if(!p.html){
+    alert('Nothing to download yet — build a site first.');
+    return;
+  }
+  const blob = new Blob([p.html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (p.name || 'site').replace(/[^a-z0-9-_]+/gi, '-').toLowerCase() + '.html';
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+openTabBtn.addEventListener('click', () => {
+  const p = currentProject();
+  if(!p.html) return;
+  const w = window.open();
+  w.document.write(p.html);
+  w.document.close();
+});
+
+// Global variable name collides with the DOM function `prompt` we use above
+// for naming projects — that's intentional and fine (window.prompt).
+
+loadState();
+renderAll();
+</script>
+</body>
+</html>
