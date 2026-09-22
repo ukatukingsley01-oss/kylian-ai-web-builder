@@ -1,5 +1,5 @@
 // This runs on the server (Vercel), never in the visitor's browser.
-// It reads your Anthropic API key from an environment variable, so the
+// It reads your Groq API key from an environment variable, so the
 // key is never exposed to anyone using your site.
 
 export default async function handler(req, res) {
@@ -7,10 +7,10 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey) {
     return res.status(500).json({
-      error: 'Server is missing ANTHROPIC_API_KEY. Add it in your hosting provider\'s environment variables.',
+      error: 'Server is missing GROQ_API_KEY. Add it in your hosting provider\'s environment variables.',
     });
   }
 
@@ -31,9 +31,9 @@ Rules:
 - If the user is asking to modify an existing page (one will be provided below as CURRENT_HTML), edit that HTML to make the requested change, preserving everything else. Return the FULL updated HTML document, not a diff or snippet.
 - Never include placeholder lorem ipsum if real, sensible sample content is easy to write instead.`;
 
-  // Build the conversation Claude sees. We keep it simple: prior turns as
+  // Build the conversation the model sees. We keep it simple: prior turns as
   // plain text context, plus the current HTML (if any) and the new request.
-  const messages = [];
+  const messages = [{ role: 'system', content: systemPrompt }];
 
   if (Array.isArray(history)) {
     for (const turn of history) {
